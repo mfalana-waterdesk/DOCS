@@ -180,20 +180,3 @@ Actions:
 1. Test in sandbox
 2. Validate with stakeholders
 3. Move to production endpoint
-
----
-
-## Risks
-
-- Duplicate triggers
-- No validation on file type
-- No retry logic
-
----
-
-## Future Improvements
-
-- PDF validation
-- Submission status field
-- Duplicate prevention
-- Error handling
