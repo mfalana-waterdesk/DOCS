@@ -136,6 +136,9 @@ Actions:
 
 ![Trigger Placeholder](./images/progress-funding-trigger.png)
 
+![Trigger Placeholder 0](./images/progress-funding-trigger-0.png)
+
+![Trigger Placeholder 1](./images/progress-funding-trigger-1.png)
 ---
 
 ## Backend Behavior
