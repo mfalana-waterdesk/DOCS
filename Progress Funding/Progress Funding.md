@@ -199,182 +199,140 @@ That means:
 
 This behavior is consistent with TeamDesk documentation for record change triggers on physical column changes 3
 
-1. Progress Funding Document Attached
+### 1. Progress Funding Document Attached
 
-Description:
-This trigger starts the Progress Funding request-document flow when a request file is uploaded to the Credit Application record.
+**Description:** This trigger starts the Progress Funding request-document flow when a request file is uploaded to the Credit Application record.
 
-Why this step exists:
-Aspire and the internal credit team need the uploaded Progress Funding request document after the user submits it in TeamDesk.
+**Why this step exists:** Aspire and the internal credit team need the uploaded Progress Funding request document after the user submits it in TeamDesk.
 
-What TeamDesk does:
-TeamDesk watches the Progress Funding Request Document attachment column.
+**What TeamDesk does:** TeamDesk watches the [Progress Funding Request Document]() attachment column.
 The trigger runs when:
-
-the record is Added or Modified
-Progress Funding Request Document changes
-the field is not blank
+  - the record is **Added** or **Modified**
+  - [Progress Funding Request Document]() changes
+  - the field is not blank
 
 It then runs:
+  1. [Progress Funding Request Email]()
+  2. [Send To Aspire(Progress Funding)]()
 
-Progress Funding Request Email
-Send To Aspire(Progress Funding)
+**Result:** The request document is distributed internally and then posted to Aspire.
 
-Result:
-The request document is distributed internally and then posted to Aspire.
+### 2. Progress Funding Request Email
 
-2. Progress Funding Request Email
+**Description:** This email alert notifies the credit team that a Progress Funding request document has been uploaded.
 
-Description:
-This email alert notifies the credit team that a Progress Funding request document has been uploaded.
+**Why this step exists:** The internal team needs immediate notice that a dealer/PWP-side user submitted a Progress Funding request.
 
-Why this step exists:
-The internal team needs immediate notice that a dealer/PWP-side user submitted a Progress Funding request.
+**What TeamDesk does:** TeamDesk sends an HTML email with:
+  - **From:** Info@Waterdesk.net
+  - **To:** credit@purewaterpartners.com, MBrowne@purewaterpartners.com
+  - **Cc:** Kyle Lawson, Marie Thompson, Me
 
-What TeamDesk does:
-TeamDesk sends an HTML email with:
-
-From: Info@Waterdesk.net
-To: credit@purewaterpartners.com, MBrowne@purewaterpartners.com
-Cc: Kyle Lawson, Marie Thompson, Me
-
-Subject:
-
-TEXT
-Copy Code
-[Dealer Name] - Progress Funding Request for Trans [Trans#] - [Company Full Legal Name]
-
+Subject: ```[Dealer Name] - Progress Funding Request for Trans [Trans#] - [Company Full Legal Name]```
 
 It attaches:
+  - [Progress Funding Request Document]()
 
-Progress Funding Request Document
+**Result:** The credit team receives the uploaded request document and a direct TeamDesk record link.
 
-Result:
-The credit team receives the uploaded request document and a direct TeamDesk record link.
+### 3. Send To Aspire(Progress Funding)
 
-3. Send To Aspire(Progress Funding)
+**Description:** This Call URL action sends the Progress Funding request document from TeamDesk to Aspire.
 
-Description:
-This Call URL action sends the Progress Funding request document from TeamDesk to Aspire.
+**Why this step exists:** The uploaded request document must be associated with the correct Aspire contract transaction.
 
-Why this step exists:
-The uploaded request document must be associated with the correct Aspire contract transaction.
-
-What TeamDesk does:
-TeamDesk performs a POST request using the configured authorization account Used for the Credit Application.
+**What TeamDesk does:** TeamDesk performs a ```POST``` request using the configured authorization account [Used for the Credit Application]().
 The target URL uses:
 
-Aspire Http Link
-Trans#, converted to text and trimmed before the decimal
+  - [Aspire Http Link]()
+  - [Trans#](), converted to text and trimmed before the decimal
 
-The request body is sent as:
-
-TEXT
-Copy Code
-asdf=<%[Progress Funding Request Document]%>
-
+The request body is sent as: ```asdf=<%[Progress Funding Request Document]%>```
 
 The action notes indicate:
 
-document type is currently coming through as "Unknown"
+  | document type is currently coming through as "Unknown"
 
-Result:
-Aspire receives the Progress Funding request document for the related transaction. The inspected action log shows successful 200 responses and at least one prior 500 response, confirming both active usage and occasional integration failure handling.
+**Result:** Aspire receives the Progress Funding request document for the related transaction. The inspected action log shows successful ```200``` responses and at least one prior ```500``` response, confirming both active usage and occasional integration failure handling.
 
-API Details
-Syntax	Description
-Method	POST
-Url	https://<%[Aspire Http Link]%>.leaseteam.net/LeaseTeam.Aspire.Api/1/Documents/ProgressFunding/Contract/<%Left(ToText([Trans#]),".")%>/transaction
-Headers	Content-Type: application/json
-Body	see payload below
-JSON
-Copy Code
+| Syntax | Description |
+| ----------- | ----------- |
+| Method | POST |
+| Url | ```https://<%[Aspire Http Link]%>.leaseteam.net/LeaseTeam.Aspire.Api/1/Documents/ProgressFunding/Contract/<%Left(ToText([Trans#]),".")%>/transaction``` |
+| Headers | ```Content-Type: application/json``` |
+| Body | see JSON below |
+ 
+```json
 {
   "rawBody": "asdf=<%[Progress Funding Request Document]%>"
 }
+```
 
-4. Promissory Note Uploaded
+### 4. Promissory Note Uploaded
 
-Description:
-This trigger starts the promissory-note side of the Progress Funding process after a promissory note file is uploaded.
+**Description:** This trigger starts the promissory-note side of the Progress Funding process after a promissory note file is uploaded.
 
-Why this step exists:
-The promissory note upload must notify internal users and update Aspire so the contract reflects the funding milestone.
+**Why this step exists:** The promissory note upload must notify internal users and update Aspire so the contract reflects the funding milestone.
 
-What TeamDesk does:
-TeamDesk watches the Progress Funding Promissory Note attachment column.
+**What TeamDesk does:** TeamDesk watches the [Progress Funding Promissory Note]() attachment column.
 The trigger runs when:
-
-the record is Added or Modified
-Progress Funding Promissory Note changes
-the field is not blank
+  - the record is Added or Modified
+  - [Progress Funding Promissory Note]() changes
+  - the field is not blank
 
 It then runs:
+1. [Promissory Note Email Alert]()
+2. [Progress Funding UDF Send]()
 
-Promissory Note Email Alert
-Progress Funding UDF Send
+**Result:** The uploaded promissory note causes both an internal alert and an Aspire contract update.
 
-Result:
-The uploaded promissory note causes both an internal alert and an Aspire contract update.
+### 5. Promissory Note Email Alert
 
-5. Promissory Note Email Alert
+**Description:** This email alert notifies internal credit/funding recipients that a promissory note has been uploaded.
 
-Description:
-This email alert notifies internal credit/funding recipients that a promissory note has been uploaded.
+**Why this step exists:** The funding team needs the promissory note immediately after it is submitted in TeamDesk.
 
-Why this step exists:
-The funding team needs the promissory note immediately after it is submitted in TeamDesk.
-
-What TeamDesk does:
-TeamDesk sends an HTML email with:
-
-From: Info@Waterdesk.net
-To: Jackie@purewaterpartners.com, MBrowne@purewaterpartners.com
-Cc: Kyle Lawson, Marie Thompson, Me, Credit@purewaterpartners.com
+**What TeamDesk does:** TeamDesk sends an HTML email with:
+  - **From:** Info@Waterdesk.net
+  - **To:** Jackie@purewaterpartners.com, MBrowne@purewaterpartners.com
+  - **Cc:** Kyle Lawson, Marie Thompson, Me, Credit@purewaterpartners.com
 
 Subject:
 
-TEXT
-Copy Code
+```TEXT
 Progress Funding: Promissory Note submitted for [Trans#] - [Company Full Legal Name] - [Dealer Name]
+```
 
 
 It attaches:
+  - [Progress Funding Promissory Note]()
 
-Progress Funding Promissory Note
+**Result:** The funding/credit team receives the promissory note and a direct link to the TeamDesk record.
 
-Result:
-The funding/credit team receives the promissory note and a direct link to the TeamDesk record.
+### 6. Progress Funding UDF Send
 
-6. Progress Funding UDF Send
+**Description:** This Call URL action updates an Aspire contract UDF group when the promissory note is uploaded.
 
-Description:
-This Call URL action updates an Aspire contract UDF group when the promissory note is uploaded.
+**Why this step exists:** Aspire is the system of record, so TeamDesk needs to signal that the Progress Funding promissory note milestone has been reached.
 
-Why this step exists:
-Aspire is the system of record, so TeamDesk needs to signal that the Progress Funding promissory note milestone has been reached.
-
-What TeamDesk does:
-TeamDesk performs a POST request to Aspire using the configured authorization account Used for the Credit Application.
+**What TeamDesk does:** TeamDesk performs a POST request to Aspire using the configured authorization account [Used for the Credit Application]().
 
 The body:
+  - identifies the object type as Contract
+  - sets a UDF field value to True
+  - targets UDF record CON_30
+  - targets the contract using Contract#
 
-identifies the object type as Contract
-sets a UDF field value to True
-targets UDF record CON_30
-targets the contract using Contract#
+**Result:** Aspire updates the contract UDF group to mark the contract as having reached the Progress Funding milestone represented by CON_30.
 
-Result:
-Aspire updates the contract UDF group to mark the contract as having reached the Progress Funding milestone represented by CON_30.
+| Syntax | Description |
+| ----------- | ----------- |
+| Method | POST |
+| Url | ```https://<%[Aspire Http Link]%>.leaseteam.net/LeaseTeam.Aspire.API/1/udfs/group``` |
+| Headers | ```Content-Type: application/json``` |
+| Body | see JSON below |
 
-API Details
-Syntax	Description
-Method	POST
-Url	https://<%[Aspire Http Link]%>.leaseteam.net/LeaseTeam.Aspire.API/1/udfs/group
-Headers	None
-Body	see JSON below
-JSON
-Copy Code
+```json
 {
   "Type": "Contract",
   "Fields": [
@@ -392,51 +350,46 @@ Copy Code
     "Type": "Record"
   }
 }
+```
 
-Record Change & Periodic Triggers
+### Record Change & Periodic Triggers
 
 The Progress Funding process does not end after submission. TeamDesk continues synchronization using triggers.
 
 These triggers support:
 
-status synchronization
-payment or term updates
-post-submission structural changes such as billing-location updates
+  - status synchronization
+  - payment or term updates
+  - post-submission structural changes such as billing-location updates
 
-The inspected database does not show a dedicated periodic trigger specifically for Progress Funding only.
+The inspected database does **not** show a dedicated periodic trigger specifically for Progress Funding only.
 However, the Credit Application record continues to participate in broader post-submission sync logic.
 
-7. Update ContractStatus From Aspire
+### 7. Update ContractStatus From Aspire
 
-Purpose:
-This periodic trigger keeps TeamDesk’s contract status aligned with Aspire after submission.
+**Purpose:** This periodic trigger keeps TeamDesk’s contract status aligned with Aspire after submission.
 
-When it runs:
+**When it runs:**
+- **Type:** Periodic
+- **Schedule/Condition:** periodic nightly sync; the trigger note says it runs when ContractStatus is not booked and uses recent modified data
 
-Type: Periodic
-Schedule/Condition: periodic nightly sync; the trigger note says it runs when ContractStatus is not booked and uses recent modified data
-
-Which records it checks:
+**Which records it checks:**
 From prior inspection and current trigger set:
+  - [ContractStatus]() is not Booked
+  - recently modified / in recent period
+  - records where Aspire may have newer status information
 
-ContractStatus is not Booked
-recently modified / in recent period
-records where Aspire may have newer status information
-
-What fires the trigger:
+**What fires the trigger:**
 This is a periodic trigger, so it is schedule-driven rather than field-change-driven.
 
-What TeamDesk does:
+**What TeamDesk does:**
+1. Selects qualifying Credit Application records
+2. Calls Aspire for updated contract status data
+3. Writes refreshed status back into TeamDesk fields
 
-Selects qualifying Credit Application records
-Calls Aspire for updated contract status data
-Writes refreshed status back into TeamDesk fields
+**Why this matters:** Progress Funding records still live on Credit Application records. Any later Aspire contract status changes must continue to flow back into TeamDesk.
 
-Why this matters:
-Progress Funding records still live on Credit Application records. Any later Aspire contract status changes must continue to flow back into TeamDesk.
-
-Result:
-TeamDesk remains synchronized to Aspire’s contract status state after the initial Progress Funding uploads.
+**Result:** TeamDesk remains synchronized to Aspire’s contract status state after the initial Progress Funding uploads.
 
 8. Term Change(Equipment Asset Only)
 
@@ -461,7 +414,7 @@ Billing Freq(New)
 billing frequency fields
 Term(New)
 
-What TeamDesk does:
+**What TeamDesk does:**
 
 Removes old rate sheet data
 Re-queries rates
@@ -499,7 +452,7 @@ B-Street 1
 B-City
 Use Customer Address
 
-What TeamDesk does:
+**What TeamDesk does:**
 
 Creates a bill-to location in Aspire
 Updates the Aspire contract to use it
