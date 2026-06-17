@@ -590,6 +590,140 @@ This trigger runs the following actions:
 
 
 ## Attaching Units
+The Credit Application process can include additional unit records beyond the main Equipment asset. In this database, attached-unit handling is confirmed by the dedicated Attach Units table, its relation back to Credit Application, and the attached-unit bill-to synchronization workflow.
+
+### What this means in the current database
+Attached units are stored as child records in [Attach Units](https://waterdesk.teamdesk.net/secure/db/76449/setup/tableoverview.aspx?table=925533) through the reference Credit Application. The table also carries lookup fields from the parent [Credit Application](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30842533) such as:
+  - [CA-ContractID](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30847296)
+  - [Transaction#](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30847313)
+  - [BilltoLoc](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=38011942)
+  - [Use Customer Address](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=38014455)
+  - [ContractStatus](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=36835323)
+
+This confirms that attached units are part of the same contract/application context, not a separate disconnected process
+
+
+**Why this step exists:** The primary Equipment asset is only one part of the overall financed package. Additional units need to remain tied to the same Aspire contract, location, billing, and term-related information so the contract stays internally consistent.
+
+
+**What TeamDesk does:** In the current setup, TeamDesk uses child-table automation for attached units in at least two confirmed ways:
+
+  1. **Billing-location synchronization from Credit Application**
+      - The parent [Create Billing Location](https://waterdesk.teamdesk.net/secure/db/76449/setup/wftrigger.aspx?wftrigger=1710404) and [Create Billing Location (Bulk Units)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wftrigger.aspx?wftrigger=1721524) triggers both run [Update Units Billto (Attach Units)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=3051162).
+      - This confirms the parent Credit Application pushes bill-to updates into attached-unit records.
+  
+  2. **Attached-unit Phase 3 contract move**
+      - On the [Attach Units](https://waterdesk.teamdesk.net/secure/db/76449/setup/tableoverview.aspx?table=925533) table, the active trigger [Update Units Billto](https://waterdesk.teamdesk.net/secure/db/76449/setup/wftrigger.aspx?wftrigger=1713123) runs for records where [Phase](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=46443918) contains "3" and [Billto Change Date](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=46444016) differs from [Date Modified](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30842477).
+      - That trigger runs [Move Asset to Contract](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=1872537), a Call URL action whose note says it attaches the location to the asset.
+
+**Result:** Attached units are confirmed to be child records of the Credit Application and are actively synchronized when billing/location changes occur. In this database, TeamDesk updates attached-unit records after bill-to changes and then pushes the revised asset-location relationship back to Aspire for Phase 3 records.
+
 ## Adding Documents
+Document submission is handled by separate buttons depending on whether the Credit Application already has a Water Desk **DBKEY#**. In this database, document handling is clearly split into two paths: pull from Opportunity when a DB key exists, or navigate the user to manual document entry when no DB key exists. TeamDesk supports this kind of custom-button and Navigate-based workflow structure.
+
+### 1. [Attach Document](https://waterdesk.teamdesk.net/secure/db/76449/setup/custbtn.aspx?custbtn=1320609)
+**Description:** This button is used when the Credit Application already has a [DBKEY#](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43118369) and the packet/document can be retrieved from Opportunity.
+
+**When it is available:**
+The button is shown when:
+
+  - [Total Number of Units](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30847748) = [Total Units Submitted](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=44127024)
+  - [Document Status](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43158557) is blank
+  - [DBKEY#](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43118369) is populated
+  - [ContractStatus](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830792) contains "Approved"
+  - user [Goods&Service Access](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=50168873) is false
+  - override rules allow submission
+
+**What TeamDesk does:** 
+This button runs:
+  1. [Get Opportunity Information(Data Only)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2793649)
+  2. [Get Opportunity Document](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2793650)
+  3. [Update the Opportunity Flag](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2793651)
+  4. [Remove the xml Doc](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2799923)
+
+**Why this step exists:** If Opportunity already holds the document and the DB key links the records together, TeamDesk can fetch the document directly instead of asking the user to upload it manually.
+
+**Result:** The document is pulled from Opportunity into the Credit Application process, and the related document-tracking fields are updated.
+
+### 2. [Add Your Document](https://waterdesk.teamdesk.net/secure/db/76449/setup/custbtn.aspx?custbtn=1321112)
+**Description:** This button is used when there is **no DBKEY#** and the user must provide the document manually.
+
+**When it is available:**
+The button is shown when:
+
+  - [Total Number of Units](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30847748) = [Total Units Submitted](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=44127024)
+  - [Document Status](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43158557) is blank
+  - [DBKEY#](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43118369) is blank
+  - approval / override conditions are met
+
+**What TeamDesk does:** This button runs [Document Navigate](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2794438), a Navigate action, which sends the user into the manual document-entry/upload process.
+
+**Why this step exists:** When there is no linked Opportunity record via DB key, TeamDesk cannot fetch the file automatically, so the document must be added manually.
+
+**Result:** The user is routed into the manual document-upload path and can add the required credit package directly.
+
+
 ## Bulk Units
-## Mid Term Uprgrades (MTU)
+Bulk-unit processing is a variation of the Credit Application flow that flags the application as bulk and then uses a separate post-submission billing-location workflow.
+
+### 1. [Bulk Unit Application]()
+**Description:** This button converts a submitted non-bulk application into the bulk-unit process.
+
+**When it is available:**
+The button is shown when:
+
+- [Credit Application Status]() = "Submitted"
+- [Bulk Load Units]() is blank or "No"
+
+
+**What TeamDesk does:** This button runs [Update the Bulk-Load Field](), an Update Record action.
+
+**Why this step exists:** Bulk-unit applications use different downstream logic than standard credit applications, especially when billing changes must be propagated across many units.
+
+**Result:** The Credit Application is flagged as a bulk-unit application and becomes eligible for the bulk-specific workflows.
+
+
+
+### 2. [Create Billing Location (Bulk Units)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wftrigger.aspx?wftrigger=1721524)
+**Description:** This trigger handles separate bill-to processing for applications marked as bulk.
+
+**When it runs:**
+  - **Type:** Record Change
+  - **Runs when record is:** Modified
+
+
+**Which records it checks:**
+This trigger applies when:
+
+  - [Bulk Load Units](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43648599) = "Yes"
+  - [Use Customer Address](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30847779) = false
+  - [ContractStatus](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830792) is one of:
+    - "Documents Submitted"
+    - "Approved by PWP (A)"
+    - "Approved by PWP (B)"
+    - "Approved by PWP (Recourse)"
+
+
+**What fires trigger:**
+The trigger runs when any of these change:
+
+  - [B-City](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830846)
+  - [B-Street 1](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830844)
+  - [Use Customer Address](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30847779)
+
+
+**What TeamDesk does:**
+This trigger runs:
+
+  1. [Create Location(Bill To Location)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2365187)
+  2. [Update the Contract for Bill to](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2365190)
+  3. [Update Payment Stream(BillToChange)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=3051165)
+  4. [Update Units Billto (Attach Units)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=3051162)
+  5. [Update Bulk Units Billto](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=3071369)
+
+**Why this matters:** This confirms that bulk-unit applications are not only flagged differently; they also have an extra child-record update step specifically for the bulk-units dataset.
+
+**Result:** When a bulk-unit application uses a different billing address, TeamDesk creates the bill-to location in Aspire, updates the contract, refreshes the payment stream, and synchronizes both attached units and bulk-unit child records to that new bill-to location.
+
+
+## Mid Term Upgrades (MTU)
