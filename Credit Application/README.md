@@ -727,3 +727,95 @@ This trigger runs:
 
 
 ## Mid Term Upgrades (MTU)
+Mid Term Upgrade processing is implemented as a separate Credit Application path with its own send button, existing-contract lookup, placeholder creation, and dedicated document-submission buttons.
+
+### 1. [Send MTU Application](https://waterdesk.teamdesk.net/secure/db/76449/setup/custbtn.aspx?custbtn=2100016)
+
+**Description:** This button starts the Mid Term Upgrade process for a Credit Application marked as an MTU.
+
+**Why this step exists:** An MTU does not create a brand-new contract from scratch. Instead, it starts from an existing Aspire transaction and prepares the record for an upgrade flow.
+
+**When it is available:** The button is shown when:
+- [Credit Application Type](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830790) = Midterm Upgrade
+- [Midterm Upgrade Flag](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380263) is not checked
+
+**What TeamDesk does:** The button first sets [Credit Application Status](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830789) to `"Submitted"`, then runs:
+1. [Get by Trans# (Mid Term Upgrade)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4353524)
+2. [Get Account Information(Mid Term Upgrade)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4353525)
+3. [Get Location Info(Mid Term Upgrade)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4353526)
+4. [Add Account Number](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=1764543)
+5. [Create Placeholder For Mid Term Upgrade](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4353577)
+6. [Update MTU Field](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4353578)
+7. [Update the First Asset Trans#](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4353580)
+8. [MTU Email Alert to PWP Accounting](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4353581)
+
+**Result:** The MTU application is initialized from the existing Aspire transaction and prepared for upgrade-specific asset and document handling.
+
+---
+
+### 2. [Add Upgrade Documents](https://waterdesk.teamdesk.net/secure/db/76449/setup/custbtn.aspx?custbtn=2100334)
+
+**Description:** This button is used to add MTU documents when there is no DB key.
+
+**Why this step exists:** If there is no DB key linking the MTU back to Opportunity, TeamDesk cannot fetch the document automatically.
+
+**When it is available:** The button is shown when:
+- [Number of Units to be Upgraded](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380485) = [MTU Units Submitted](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380733)
+- [Document Status](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43158557) is blank
+- [DBKEY#](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43118369) is blank
+- [Midterm Upgrade Flag](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380263) = true
+- override / status conditions are met
+
+**What TeamDesk does:** This button sets [Midterm Upgrade Flag](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380263) to `True` and then runs [Document Navigate](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2794438) to route the user into the manual document-upload path.
+
+**Result:** The user is routed into the manual MTU document-submission workflow.
+
+---
+
+### 3. [Attach MTU Document](https://waterdesk.teamdesk.net/secure/db/76449/setup/custbtn.aspx?custbtn=2100335)
+
+**Description:** This button is used when an MTU already has a [DBKEY#](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43118369) and TeamDesk can pull the document from Opportunity.
+
+**Why this step exists:** If the MTU is already linked to Opportunity through the DB key, TeamDesk can retrieve the upgrade packet directly.
+
+**When it is available:** The button is shown when:
+- [Number of Units to be Upgraded](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380485) = [MTU Units Submitted](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380733)
+- [Document Status](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43158557) is blank
+- [Midterm Upgrade Flag](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380263) = true
+- [DBKEY#](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43118369) is populated
+- [ContractStatus](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830792) is not `"Dealer Submitted"`
+- override conditions are met
+
+**What TeamDesk does:** This button runs:
+1. [Get Opportunity Information(Data Only, MTU)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4354329)
+2. [Get Opportunity MTU Document](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4357558)
+3. [Update the Opportunity Flag(MTU)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4357549)
+4. [Remove the xml Doc](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2799923)
+
+**Result:** The MTU document package is retrieved from Opportunity and document-tracking values are updated.
+
+---
+
+### 4. [Attach MTU Document.](https://waterdesk.teamdesk.net/secure/db/76449/setup/custbtn.aspx?custbtn=2102108)
+
+**Description:** This is a second DB-key-based MTU document button used under a slightly different eligibility rule set.
+
+**Why this step exists:** This path appears to support an alternate approved MTU document-retrieval scenario based on [CreditDecision](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830791) and user access.
+
+**When it is available:** The button is shown when:
+- [Number of Units to be Upgraded](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380485) = [MTU Units Submitted](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380733)
+- [Document Status](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43158557) is blank
+- [Midterm Upgrade Flag](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=62380263) = `True`
+- [Credit Application Type](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830790) = `"Midterm Upgrade"`
+- [DBKEY#](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=43118369) is populated
+- [CreditDecision](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=30830791) contains `"Approved"`
+- user [Goods&Service Access](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=50168873) = `True`
+- override conditions are met
+
+**What TeamDesk does:** This button runs:
+1. [Get Opportunity Information(Data Only, MTU)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4354329)
+2. [Get Opportunity MTU Document](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4357558)
+3. [Remove the xml Doc](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=2799923)
+4. [Update the Opportunity Flag(MTU)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=4357549)
+
+**Result:** Approved MTU records with a DB key can retrieve their upgrade packet from Opportunity under this alternate approval/access path.
