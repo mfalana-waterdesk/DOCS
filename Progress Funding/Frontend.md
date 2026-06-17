@@ -1,67 +1,71 @@
 # Progress Funding – Frontend User Guide
+
 ## Overview
-The **Progress Funding** process in TeamDesk lets approved users upload two documents on a [Credit Application](https://waterdesk.teamdesk.net/secure/db/76449/setup/table.aspx?table=925268):
+The **Progress Funding** section on a Credit Application lets approved users upload two documents:
+
   1. **Progress Funding Request Document**
   2. **Progress Funding Promissory Note**
 
-
 After each upload, TeamDesk automatically notifies the internal team and sends the related update to Aspire.
 
-## Who can see the Progress Funding section
-The **Progress Funding** section is hidden by default and is shown only by [Credit Application form behavior](https://waterdesk.teamdesk.net/secure/db/76449/setup/formrules.aspx?table=925268) for:
-  - [Default Role](https://waterdesk.teamdesk.net/secure/db/76449/setup/role.aspx?role=230530)
-  - [PWP](https://waterdesk.teamdesk.net/secure/db/76449/setup/role.aspx?role=231375)
-  - [PWP (Management)](https://waterdesk.teamdesk.net/secure/db/76449/setup/role.aspx?role=236757)
-  - specific approved users
+## Who can use this section
+The **Progress Funding** section is available only to approved users.
 
+If you do not see this section on your Credit Application, contact your administrator or internal support team.
 
-If you do not see the section, your role/user access is likely the reason.
+> [!NOTE]
+> If the **Progress Funding** section is not visible, your role or user access may not allow it.
+
+---
 
 ## Step 1 — Upload the Progress Funding Request Document
   1. Open the correct **Credit Application** record.
   2. Scroll to the **Progress Funding** section.
-    ![Progress Funding Section](./images/image-0.png "Progress Funding Section Image")
-  3. Upload a file into [Progress Funding Request Document](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=75061732).
-    ![Progress Funding Document Field](./images/image-1.png "Progress Funding Document Field Image")
-  4. Save the record if needed.
+     ![Progress Funding Section](./images/image-0.png "Progress Funding Section Image")
+  4. Upload your file in **Progress Funding Request Document**.
+     ![Progress Funding Document Field](./images/image-1.png "Progress Funding Document Field Image")
+  5. Save the record if prompted.
 
 
-### What happens automatically
-When the file is uploaded, [Progress Funding Document Attached](https://waterdesk.teamdesk.net/secure/db/76449/setup/wftrigger.aspx?wftrigger=2951778) runs automatically.
 
-TeamDesk then:
-  - sends [Progress Funding Request Email](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=5330711) to the credit team
-  - sends the uploaded file to Aspire using [Send To Aspire(Progress Funding)](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=5330712)
+### What happens next
+  - The internal credit team is notified automatically.
+  - The uploaded document is sent to Aspire automatically.
 
-### Internal result
-  - Credit team receives the uploaded document by email
-  - Aspire receives the request document for the related transaction
+> [!TIP]
+> Before saving, confirm that you are working in the correct Credit Application record.
 
+---
 
 ## Step 2 — Upload the Progress Funding Promissory Note
   1. Open the same **Credit Application** record.
-  2. In the **Progress Funding** section, upload a file into [Progress Funding Promissory Note](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=75181177).
+  2. In the **Progress Funding** section, upload your file in **Progress Funding Promissory Note**.
     ![Progress Funding Promissory Note Field](./images/image-2.png "Progress Funding Promissory Note Field Image")
-  3. Save the record if needed.
+  3. Save the record if prompted.
 
 
-### What happens automatically
-When the file is uploaded, [Promissory Note Uploaded](https://waterdesk.teamdesk.net/secure/db/76449/setup/wftrigger.aspx?wftrigger=2956826) runs automatically.
+### What happens next
+  - The internal funding/credit team is notified automatically.
+  - Aspire is updated automatically.
+    ![Progress Funding Populated Fields](./images/progress-funding-populated.png "Progress Funding Populated Fields")
+---
 
-TeamDesk then:
-  - sends [Promissory Note Email Alert](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=5340100)
-  - updates Aspire using [Progress Funding UDF Send](https://waterdesk.teamdesk.net/secure/db/76449/setup/wfaction.aspx?wfaction=5340101)
+## Important
+If you replace either uploaded file later, the system may treat it as a new submission.
 
-### Internal result
-  - Funding/credit recipients receive the promissory note by email
-  - Aspire marks the related contract milestone as complete through UDF CON_30
+That means:
+- notifications may be sent again
+- the Aspire update may run again
 
-## Important note about re-uploads
-Both upload triggers are configured for **Added, Modified** and run when the attachment field value changes in TeamDesk workflow trigger logic.
+Only replace a file if you intend to resubmit it.
 
-That means if a user replaces either file:
-  - the related trigger runs again
-  - email notifications can be sent again
-  - the Aspire call can be sent again
+> [!WARNING]
+> Re-uploading or replacing a file may submit the process again.
 
-So users should avoid replacing files unless they intentionally want to resubmit.
+---
+
+## Tips
+- Make sure you are uploading the file to the correct Credit Application.
+- Double-check the file before saving.
+- If the **Progress Funding** section is missing, or if you are unsure whether a file was submitted correctly, contact your administrator or support team.
+
