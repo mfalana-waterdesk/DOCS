@@ -20,7 +20,9 @@ If you do not see the section, your role/user access is likely the reason.
 ## Step 1 — Upload the Progress Funding Request Document
   1. Open the correct **Credit Application** record.
   2. Scroll to the **Progress Funding** section.
+    ![Progress Funding Section](./images/image-0.png "Progress Funding Section Image")
   3. Upload a file into [Progress Funding Request Document](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=75061732).
+    ![Progress Funding Document Field](./images/image-1.png "Progress Funding Document Field Image")
   4. Save the record if needed.
 
 
@@ -39,6 +41,7 @@ TeamDesk then:
 ## Step 2 — Upload the Progress Funding Promissory Note
   1. Open the same **Credit Application** record.
   2. In the **Progress Funding** section, upload a file into [Progress Funding Promissory Note](https://waterdesk.teamdesk.net/secure/db/76449/setup/column.aspx?column=75181177).
+    ![Progress Funding Promissory Note Field](./images/image-2.png "Progress Funding Promissory Note Field Image")
   3. Save the record if needed.
 
 
