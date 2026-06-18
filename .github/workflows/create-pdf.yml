@@ -34,27 +34,38 @@ jobs:
 
             echo "Processing $file"
 
+            dir=$(dirname "$file")
             base=$(basename "$file" .md)
             safe_name=$(echo "$base" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 
+            # Move into file directory (fixes image paths)
+            cd "$dir"
+
+            # Fix GitHub callouts
             sed -E '
             s/^> \[!NOTE\]/<div class="note"><strong>Note:<\/strong>/;
             s/^> \[!TIP\]/<div class="tip"><strong>Tip:<\/strong>/;
             s/^> \[!WARNING\]/<div class="warning"><strong>Warning:<\/strong>/;
             s/^> ?(.*)$/\1<\/div>/;
-            ' "$file" > temp.md
+            ' "$(basename "$file")" > temp.md
 
-            pandoc temp.md \
+            # Convert to HTML
+            pandoc --from=markdown temp.md \
               -o temp.html \
-              --css=styles.css \
+              --css=../styles.css \
               --metadata title="$base"
 
+            # Convert to PDF (allow images)
             wkhtmltopdf --enable-local-file-access \
-              temp.html "outputs/pdf/$safe_name.pdf"
+              temp.html "../outputs/pdf/$safe_name.pdf"
 
+            # Convert to PNG preview
             pdftoppm -png -singlefile -r 200 \
-              "outputs/pdf/$safe_name.pdf" \
-              "outputs/png/$safe_name"
+              "../outputs/pdf/$safe_name.pdf" \
+              "../outputs/png/$safe_name"
+
+            # Go back to repo root
+            cd - > /dev/null
 
           done
 
