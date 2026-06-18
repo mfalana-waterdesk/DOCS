@@ -98,4 +98,3 @@ jobs:
             git commit -m "Auto-generate PDFs for all markdown files"
             git push
           fi
-``
