@@ -1,0 +1,50 @@
+name: Build Resume
+
+on: [push]
+
+permissions:
+ contents: write  # allow this workflow to push commits
+
+jobs:
+ build:
+   runs-on: ubuntu-latest
+
+   steps:
+     - name: Checkout repo
+       uses: actions/checkout@v4
+       with:
+         persist-credentials: true
+         fetch-depth: 0
+
+     - name: Build PDF with LaTeX
+       uses: xu-cheng/latex-action@v3
+       with:
+         root_file: resume.tex
+
+     - name: Install poppler-utils
+       run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+     - name: Generate PNG from PDF
+       run: |
+         mkdir -p outputs/png
+         pdftoppm -png -singlefile -r 200 resume.pdf outputs/png/resume
+
+     - name: Collect PDF into outputs
+       run: |
+         mkdir -p outputs
+         cp resume.pdf outputs/resume.pdf
+
+     - name: Commit updated resume artifacts
+       run: |
+         git config user.name "github-actions"
+         git config user.email "github-actions@github.com"
+
+         git add outputs/resume.pdf outputs/png/resume.png
+
+         # Only commit if something actually changed
+         if git diff --cached --quiet; then
+           echo "No resume changes to commit."
+         else
+           git commit -m "Auto-update resume PDF & PNG"
+           git push origin main
+         fi
