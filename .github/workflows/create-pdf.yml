@@ -36,11 +36,13 @@ jobs:
 
             dir=$(dirname "$file")
             base=$(basename "$file" .md)
-            safe_name=$(echo "$base" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+
+            # ✅ Unique filename (prevents collisions)
+            safe_name=$(echo "$file" | sed 's|^\./||' | tr ' /' '-' | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-')
 
             cd "$dir"
 
-            # Transform GitHub callouts (NOTE, TIP, WARNING)
+            # ✅ Convert GitHub callouts to styled HTML
             sed -E '
             s/^> \[!NOTE\]/<div class="note"><strong>Note:<\/strong>/;
             s/^> \[!TIP\]/<div class="tip"><strong>Tip:<\/strong>/;
@@ -48,7 +50,7 @@ jobs:
             s/^> ?(.*)$/\1<\/div>/;
             ' "$(basename "$file")" > temp.md
 
-            # Try conversion — skip if it fails
+            # ✅ Try conversion — skip on failure
             if pandoc -f gfm temp.md \
                 -o temp.html \
                 --css=../styles.css \
@@ -56,15 +58,27 @@ jobs:
 
               echo "✔ Converted $file"
 
-              wkhtmltopdf --enable-local-file-access \
-                temp.html "../outputs/pdf/$safe_name.pdf"
+              pdf_path="../outputs/pdf/$safe_name.pdf"
 
-              pdftoppm -png -singlefile -r 200 \
-                "../outputs/pdf/$safe_name.pdf" \
-                "../outputs/png/$safe_name"
+              # ✅ Generate PDF
+              if wkhtmltopdf --enable-local-file-access temp.html "$pdf_path"; then
+                echo "✔ PDF created"
+
+                # ✅ Generate PNG only if PDF exists
+                if [ -f "$pdf_path" ]; then
+                  pdftoppm -png -singlefile -r 200 \
+                    "$pdf_path" \
+                    "../outputs/png/$safe_name"
+                else
+                  echo "⚠ PDF missing, skipping PNG"
+                fi
+
+              else
+                echo "❌ PDF generation failed for $file"
+              fi
 
             else
-              echo " Skipping $file due to conversion error"
+              echo "❌ Skipping $file due to conversion error"
             fi
 
             cd - > /dev/null
@@ -84,3 +98,4 @@ jobs:
             git commit -m "Auto-generate PDFs for all markdown files"
             git push
           fi
+``
