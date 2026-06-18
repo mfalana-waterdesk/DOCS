@@ -25,17 +25,18 @@ jobs:
         run: |
           mkdir -p outputs/pdf outputs/png
 
-      # Loop through ALL markdown files
       - name: Build PDFs from all Markdown files
         run: |
-          find . -name "*.md" ! -path "./.github/*" | while read file; do
+          find . -name "*.md" \
+            ! -path "./.github/*" \
+            ! -path "./outputs/*" \
+            ! -name "*-0.md" | while read file; do
+
             echo "Processing $file"
 
-            # Create safe filename
             base=$(basename "$file" .md)
             safe_name=$(echo "$base" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 
-            # Transform callouts
             sed -E '
             s/^> \[!NOTE\]/<div class="note"><strong>Note:<\/strong>/;
             s/^> \[!TIP\]/<div class="tip"><strong>Tip:<\/strong>/;
@@ -43,16 +44,14 @@ jobs:
             s/^> ?(.*)$/\1<\/div>/;
             ' "$file" > temp.md
 
-            # Convert to HTML
             pandoc temp.md \
               -o temp.html \
               --css=styles.css \
               --metadata title="$base"
 
-            # Convert to PDF
-            wkhtmltopdf temp.html "outputs/pdf/$safe_name.pdf"
+            wkhtmltopdf --enable-local-file-access \
+              temp.html "outputs/pdf/$safe_name.pdf"
 
-            # Convert to PNG
             pdftoppm -png -singlefile -r 200 \
               "outputs/pdf/$safe_name.pdf" \
               "outputs/png/$safe_name"
