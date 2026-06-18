@@ -1,50 +1,74 @@
-name: Build Resume
+name: Build All Markdown PDFs
 
 on: [push]
 
 permissions:
- contents: write  # allow this workflow to push commits
+  contents: write
 
 jobs:
- build:
-   runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-   steps:
-     - name: Checkout repo
-       uses: actions/checkout@v4
-       with:
-         persist-credentials: true
-         fetch-depth: 0
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
 
-     - name: Build PDF with LaTeX
-       uses: xu-cheng/latex-action@v3
-       with:
-         root_file: resume.tex
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc wkhtmltopdf poppler-utils
 
-     - name: Install poppler-utils
-       run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Create output folders
+        run: |
+          mkdir -p outputs/pdf outputs/png
 
-     - name: Generate PNG from PDF
-       run: |
-         mkdir -p outputs/png
-         pdftoppm -png -singlefile -r 200 resume.pdf outputs/png/resume
+      # Loop through ALL markdown files
+      - name: Build PDFs from all Markdown files
+        run: |
+          find . -name "*.md" ! -path "./.github/*" | while read file; do
+            echo "Processing $file"
 
-     - name: Collect PDF into outputs
-       run: |
-         mkdir -p outputs
-         cp resume.pdf outputs/resume.pdf
+            # Create safe filename
+            base=$(basename "$file" .md)
+            safe_name=$(echo "$base" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
 
-     - name: Commit updated resume artifacts
-       run: |
-         git config user.name "github-actions"
-         git config user.email "github-actions@github.com"
+            # Transform callouts
+            sed -E '
+            s/^> \[!NOTE\]/<div class="note"><strong>Note:<\/strong>/;
+            s/^> \[!TIP\]/<div class="tip"><strong>Tip:<\/strong>/;
+            s/^> \[!WARNING\]/<div class="warning"><strong>Warning:<\/strong>/;
+            s/^> ?(.*)$/\1<\/div>/;
+            ' "$file" > temp.md
 
-         git add outputs/resume.pdf outputs/png/resume.png
+            # Convert to HTML
+            pandoc temp.md \
+              -o temp.html \
+              --css=styles.css \
+              --metadata title="$base"
 
-         # Only commit if something actually changed
-         if git diff --cached --quiet; then
-           echo "No resume changes to commit."
-         else
-           git commit -m "Auto-update resume PDF & PNG"
-           git push origin main
-         fi
+            # Convert to PDF
+            wkhtmltopdf temp.html "outputs/pdf/$safe_name.pdf"
+
+            # Convert to PNG
+            pdftoppm -png -singlefile -r 200 \
+              "outputs/pdf/$safe_name.pdf" \
+              "outputs/png/$safe_name"
+
+          done
+
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add outputs/pdf outputs/png || true
+
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Auto-generate PDFs for all markdown files"
+            git push
+          fi
