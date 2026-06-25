@@ -685,22 +685,3 @@ This is a real downstream dependency that can affect operations after rollout.
 Eligible Work Orders create or update external TeamDesk service tickets.
 
 ---
-
-## Current Completion Status
-
-### Confirmed live findings
-- PWP dealer-creation button and action flow
-- source Account gets marked as processed
-- Dealer creation field mapping
-- Dealer starts as head office
-- branch-style dealer cleanup appears to be manual unless another hidden automation exists
-- Water Desk Opportunity submission buttons and filters
-- Water Desk Work Order routing maintenance points
-- Nashville already exists as an example of a market/location already built into routing
-- Water Desk Opportunity visibility depends on relationship-linked user fields
-
-### Still pending confirmation
-- whether a hidden Bottleless Nation-specific dealer cleanup automation exists outside the pages already reviewed
-- whether any additional Water Desk views, dashboards, or record-access pages need changes for a new dealer rollout
-- whether any additional market/zip/location setup is needed for a truly brand-new market, rather than an already-configured example like Nashville
-
