@@ -536,3 +536,33 @@ This is a live downstream operational dependency.
 Eligible Work Orders generate or update external TeamDesk service tickets.
 
 ---
+
+## Adding User to a Dealer
+> [!IMPORTANT]
+> Before adding a new user to a dealer, we must have a [Pure Water Partners Data Access and Reporting Permissions Document](https://bottlelessnation.sharepoint.com/:b:/s/ITTeam/IQB5JNMb_ImURZUjlE3Y8KGRARV7lxctuZBg0B_dp_NLRX0?e=qnsfHs). If not send one to the customer to fill out, it is imperritave to cc Merrit Browne in the exchange as well.
+
+
+
+1. Afterwards go into setup -> [Manage Existing User Shares](), -> quick share and add the email address of the user(s) and save 
+ ![Image 0](./images/image-0.png "Image 0")
+> [!NOTE]
+> Don’t forget to assign a role (this can be changed later)
+
+
+
+2. Navigate to your users and click Add User Property
+ ![Image 1](./images/image-1.png "Image 1")
+
+
+
+3. From the dealer, take note of the Dealer No and Dealer Administrator ID, you will need them later
+ ![Image 2](./images/image-2.png "Image 2")
+
+
+ 
+4. In the User Property view, paste the necessary values,
+Under Dealer Security Settings/Notifications, set the Aspire System Environment to Production
+Under application security, check the view, modify, and add records boxes
+ ![Image 3](./images/image-3.png "Image 3")
+
+
