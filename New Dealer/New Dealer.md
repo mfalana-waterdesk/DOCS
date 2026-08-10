@@ -543,7 +543,7 @@ Eligible Work Orders generate or update external TeamDesk service tickets.
 
 
 
-1. Afterwards go into setup -> [Manage Existing User Shares](), -> quick share and add the email address of the user(s) and save 
+1. Afterwards go into setup -> [Manage Existing User Shares](https://waterdesk.teamdesk.net/secure/db/76449/setup/users.aspx), -> quick share and add the email address of the user(s) and save 
  ![Image 0](./images/image-0.png "Image 0")
 > [!NOTE]
 > Don’t forget to assign a role (this can be changed later)
